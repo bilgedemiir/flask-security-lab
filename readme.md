@@ -1,30 +1,11 @@
-# Mini Web Security Demo (Flask)
+# Secure Branch
 
-This project demonstrates common web vulnerabilities and their secure fixes.
+This branch contains the fixed version of the application.
 
-## Branches
-
-- vulnerable → intentionally vulnerable version
-- secure → fixed secure implementation
-
-## Features
-
-- Register / Login
-- Comment system
-- Admin panel
-
-## Technologies
-
-- Python
-- Flask
-- SQLite
-- bcrypt
-
-## Run Locally
-
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-
-python -c "from db import init_db; init_db()"
-python app.py
+## Security improvements
+- Parameterized SQL queries
+- Output escaping (no `|safe`)
+- Role-based access control for admin
+- CSRF protection on POST forms
+- Password hashing with bcrypt
+- Secret key from environment
