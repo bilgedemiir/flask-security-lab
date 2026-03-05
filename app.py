@@ -3,16 +3,14 @@ from db import get_db, init_db
 import bcrypt
 
 app = Flask(__name__)
-app.secret_key = "dev_secret_key"  # VULNERABLE: hardcoded secret
+app.secret_key = "dev_secret_key"
 
-# Demo flag'leri
-XSS_DEMO = False          # True yapınca Stored XSS tetiklenir (|safe)
-SQLI_LOGIN_DEMO = True    # True: /login_vuln SQLi açık, False: fixli parametrized
+XSS_DEMO = False
+SQLI_LOGIN_DEMO = True   
 
 
 @app.after_request
 def add_no_cache_headers(response):
-    # Logout sonrası back tuşuyla cache'ten "login olmuş gibi" görünmesin
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -25,21 +23,13 @@ def home():
         return redirect("/comments")
     return "Mini Vuln App çalışıyor. /register veya /login"
 
-
-# -------------------------
-# SECURE REGISTER / LOGIN
-# -------------------------
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form["username"].strip()
         password = request.form["password"]
-
-        # bcrypt hash -> DB'ye string kaydet
         password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-        # VULNERABILITY: hardcoded admin username -> admin role
         role = "admin" if username == "admin" else "user"
 
         db = get_db()
@@ -71,7 +61,6 @@ def login():
 
         if user:
             stored = user["password_hash"]
-            # stored str ise bytes'a çevir
             if isinstance(stored, str):
                 stored = stored.encode("utf-8")
 
@@ -84,11 +73,6 @@ def login():
         return "Login failed", 401
 
     return render_template("login.html")
-
-
-# -------------------------
-# VULNERABLE SQLi LOGIN DEMO
-# -------------------------
 
 @app.route("/register_vuln", methods=["GET", "POST"])
 def register_vuln():
@@ -129,14 +113,12 @@ def login_vuln():
         db = get_db()
 
         if SQLI_LOGIN_DEMO:
-            # VULNERABLE: string birleştirme (SQL injection riski)
             query = (
                 "SELECT id, username, role FROM users_vuln "
                 f"WHERE username = '{username}' AND password = '{password}'"
             )
             user = db.execute(query).fetchone()
         else:
-            # FIX: parameterized
             user = db.execute(
                 "SELECT id, username, role FROM users_vuln WHERE username = ? AND password = ?",
                 (username, password),
@@ -152,20 +134,10 @@ def login_vuln():
 
     return render_template("login.html")
 
-
-# -------------------------
-# LOGOUT
-# -------------------------
-
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
-
-
-# -------------------------
-# COMMENTS (Stored XSS demo toggle burada)
-# -------------------------
 
 @app.route("/comments", methods=["GET", "POST"])
 def comments():
@@ -193,14 +165,8 @@ def comments():
 
     return render_template("comments.html", comments=rows, xss_demo=XSS_DEMO)
 
-
-# -------------------------
-# ADMIN PANEL (Broken Access Control demo)
-# -------------------------
-
 @app.route("/admin")
 def admin():
-    # VULNERABLE: role kontrolü yok (her login olan girebilir)
     if "user_id" not in session:
         return redirect("/login")
 
@@ -219,7 +185,6 @@ def admin():
 
 @app.route("/admin/delete/<int:comment_id>", methods=["POST"])
 def admin_delete_comment(comment_id):
-    # VULNERABLE: role kontrolü yok
     if "user_id" not in session:
         return redirect("/login")
 
@@ -227,11 +192,6 @@ def admin_delete_comment(comment_id):
     db.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
     db.commit()
     return redirect("/admin")
-
-
-# -------------------------
-# SQLi demo için daha kontrollü bir sayfa: user comment search
-# -------------------------
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
@@ -245,7 +205,6 @@ def search():
         q = request.form["q"]
         db = get_db()
 
-        # Bu endpoint secure bırakıldı (istersen ayrıca SQLI_DEMO flag ile zafiyetli yaparsın)
         results = db.execute(
             """
             SELECT comments.id, comments.content, comments.created_at, users.username
@@ -261,6 +220,4 @@ def search():
 
 
 if __name__ == "__main__":
-    # İlk kurulum için bir kere:
-    # init_db()
     app.run(debug=True)
