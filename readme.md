@@ -1,40 +1,27 @@
 # Mini Web Security Demo (Flask)
 
-This project is a small Flask web application created for learning web security concepts.
-
-It demonstrates common vulnerabilities and their secure fixes.
+This project demonstrates common web vulnerabilities and their secure fixes.
 
 ## Branches
 
-- **vulnerable** → intentionally vulnerable version
-- **secure** → fixed secure implementation
+- vulnerable → intentionally vulnerable version
+- secure → fixed secure implementation
 
 ## Features
 
-- Register / Login system
+- Register / Login
 - Comment system
 - Admin panel
-- Search functionality
 
-## Vulnerabilities Demonstrated (vulnerable branch)
+## Technologies
 
-- SQL Injection
-- Stored XSS
-- Broken Access Control
-- Hardcoded Admin Role
-- Missing CSRF protection
-
-## Security Fixes (secure branch)
-
-- Parameterized SQL queries
-- Escaped HTML output
-- Role-based access control
-- Password hashing with bcrypt
-- CSRF tokens in forms
+- Python
+- Flask
+- SQLite
+- bcrypt
 
 ## Run Locally
 
-```bash
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
