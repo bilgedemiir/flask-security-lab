@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS comments (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
--- SQLi login demo için bilerek zayıf tablo (plaintext password)
 CREATE TABLE IF NOT EXISTS users_vuln (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
